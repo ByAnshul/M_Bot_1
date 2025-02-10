@@ -1,6 +1,6 @@
 sentence-transformers==2.2.2
-langchain
-flask
+langchain==0.0.345
+flask==2.2.3
 pypdf
 python-dotenv
 pinecone[grpc]
@@ -8,5 +8,4 @@ langchain-pinecone
 langchain_community
 langchain_openai
 langchain_experimental
-
--e .
+gunicorn==20.1.0
