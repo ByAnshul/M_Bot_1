@@ -35,6 +35,9 @@ docsearch = PineconeVectorStore.from_existing_index(
     embedding=embeddings
 )
 
-# Only process new documents if index was just created
+# Process documents when creating new index
 if index_name not in pc.list_indexes().names():
+    # Load and process PDF files
+    raw_text = load_pdf_file("Data/")
+    text_chunks = text_split(raw_text)
     docsearch.add_documents(documents=text_chunks)

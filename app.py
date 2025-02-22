@@ -10,6 +10,7 @@ from src.prompt import system_prompt  # assuming system_prompt is defined here
 import os
 
 app = Flask(__name__)
+app.secret_key = os.environ.get('FLASK_SECRET_KEY') or 'dev-secret-key-123'
 
 # Load environment variables from .env
 load_dotenv()
