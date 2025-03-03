@@ -7,10 +7,8 @@ from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.chat_models import ChatOpenAI
 
-
 from src.helper import download_hugging_face_embeddings
 from langchain_pinecone import PineconeVectorStore
-# from langchain.chat_models import ChatOpenAI  # Use ChatOpenAI with Together API
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate
@@ -41,7 +39,7 @@ docsearch = PineconeVectorStore.from_existing_index(
 )
 
 # Create a retriever from the vector store
-retriever = docsearch.as_retriever(search_type="similarity", search_kwargs={"k": 5})
+retriever = docsearch.as_retriever(search_type="similarity", search_kwargs={"k": 3})  # Reduce to 3 for better precision
 
 # Initialize LLM with Together API
 llm = ChatOpenAI(
@@ -76,24 +74,33 @@ def chat():
 def main():
     return render_template('chat.html')  # Add main route
 
-
-
 @app.get("/signin")  # Add this route
 async def signin():
     return render_template("signin.html")
-
-
-
 
 @app.route('/get', methods=["POST"])
 def get_response():
     msg = request.form["msg"]
     print("User input:", msg)
     
+
+    # Retrieve documents from knowledge base
+    results = retriever.get_relevant_documents(msg)
+
+    if results:
+        # Check if the first result is highly relevant (basic confidence check)
+        best_match = results[0].page_content
+        similarity_score = results[0].metadata.get("score", 1.0)  # Assuming metadata has a score (lower = better)
+
+        if similarity_score < 0.3:  # Lower score = more relevant (adjust as needed)
+            print("Returning direct KB answer:", best_match)
+            return best_match  # Return knowledge base answer directly
+
+    # If no good match, use LLM
     response = rag_chain.invoke({"input": msg})
     answer = response["answer"]
-    
-    print("Response:", answer)
+
+    print("LLM Response:", answer)
     return str(answer)
 
 # Optional: Route to start the Flask app as a subprocess
@@ -103,4 +110,4 @@ def start_app():
     return "App started", 200
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=8080, debug=False)
+    app.run(host="0.0.0.0", port=8080, debug=True)

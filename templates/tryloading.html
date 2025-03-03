@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading Animation Example</title>
+    
+    <!-- Bootstrap CSS for Spinner -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <style>
+        /* Center loading animation */
+        #loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container text-center mt-5">
+        <h2>Click the button to show loading</h2>
+        <button id="showLoading" class="btn btn-primary">Show Loading</button>
+
+        <!-- Loading Animation -->
+        <div id="loading">
+            <div class="spinner-border text-primary" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+            <p>Loading... Please wait</p>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $("#showLoading").click(function() {
+                // Show the loading animation
+                $("#loading").show();
+
+                // Simulate a delay (2 seconds) before hiding it
+                setTimeout(function() {
+                    $("#loading").hide();
+                }, 2000);
+            });
+        });
+    </script>
+
+</body>
+</html>

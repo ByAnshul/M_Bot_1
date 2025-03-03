@@ -221,3 +221,8 @@ border-radius: 0 0 15px 15px !important;
 	margin-bottom: 15px !important;
 }
 }
+#loading {
+	display: flex;
+	justify-content: center;
+	margin: 10px 0;
+}
