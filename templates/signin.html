@@ -9,33 +9,104 @@
 <body style="background-color:rgb(17, 15, 26);">
     <div class="container" id="container">
         <div class="form-container sign-up-container">
-            <form action="#">
+            <form id="signupForm">
                 <h1>Create Account</h1>
                 <div class="social-container">
                     <a href="#" class="social"><i class="fab fa-facebook-f"></i></a>
                     <a href="#" class="social"><i class="fab fa-google-plus-g"></i></a>
                     <a href="#" class="social"><i class="fab fa-linkedin-in"></i></a>
                 </div>
-                <span> Use your email for registration</span>
-                <input type="text" placeholder="Name" />
-                <input type="email" placeholder="Email" />
-                <input type="password" placeholder="Password" />
-                <button>Sign Up</button>
+                <span>Use your email for registration</span>
+                <input type="text" id="name" placeholder="Name" required>
+                <input type="email" id="email" placeholder="Email" required>
+                <input type="password" id="password" placeholder="Password" required>
+                <input type="text" id="symptoms" placeholder="Symptoms (optional)">
+                <input type="text" id="diseases" placeholder="Existing diseases (optional)">
+                <div id="signupError" style="color: red; margin: 10px 0;"></div>
+                <button type="submit">Sign Up</button>
             </form>
+            <script>
+            document.getElementById('signupForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const formData = {
+                    name: document.getElementById('name').value,
+                    email: document.getElementById('email').value,
+                    password: document.getElementById('password').value,
+                    symptoms: document.getElementById('symptoms').value || null,
+                    diseases: document.getElementById('diseases').value || null
+                };
+
+                try {
+                    const response = await fetch('/signup', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(formData)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        document.getElementById('signupError').style.color = 'green';
+                        document.getElementById('signupError').textContent = 'Signup successful! Redirecting...';
+                        setTimeout(() => window.location.href = '/signin', 1500);
+                    } else {
+                        document.getElementById('signupError').style.color = 'red';
+                        document.getElementById('signupError').textContent = result.message;
+                    }
+                } catch (error) {
+                    document.getElementById('signupError').textContent = 'An error occurred. Please try again.';
+                    document.getElementById('signupError').style.color = 'red';
+                }
+            });
+            </script>
         </div>
         <div class="form-container sign-in-container">
-            <form action="#">
+            <form id="loginForm">
                 <h1>Sign in</h1>
                 <div class="social-container">
                     <a href="#" class="social"><i class="fab fa-facebook-f"></i></a>
                     <a href="#" class="social"><i class="fab fa-google-plus-g"></i></a>
                     <a href="#" class="social"><i class="fab fa-linkedin-in"></i></a>
                 </div>
-                <input type="email" placeholder="Email" />
-                <input type="password" placeholder="Password" />
+                <input type="email" id="loginEmail" placeholder="Email" required>
+                <input type="password" id="loginPassword" placeholder="Password" required>
                 <a href="#">Forgot your password?</a>
-                <button>Sign In</button>
+                <div id="loginError" style="color: red; margin: 10px 0;"></div>
+                <button type="submit">Sign In</button>
             </form>
+            <script>
+                document.getElementById('loginForm').addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    
+                    const loginData = {
+                        email: document.getElementById('loginEmail').value,
+                        password: document.getElementById('loginPassword').value
+                    };
+
+                    try {
+                        const response = await fetch('/login', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(loginData)
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            window.location.href = result.redirect;
+                        } else {
+                            document.getElementById('loginError').textContent = result.message;
+                        }
+                    } catch (error) {
+                        document.getElementById('loginError').textContent = 'An error occurred. Please try again.';
+                    }
+                });
+            </script>
         </div>
         <div class="overlay-container">
             <div class="overlay">

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify, request, redirect, url_for
+from flask import Flask, render_template, jsonify, request, redirect, url_for,session
 import os
 from dotenv import load_dotenv
 import subprocess
@@ -7,7 +7,8 @@ from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.chat_models import ChatOpenAI
 
-
+from src.helper import download_hugging_face_embeddings
+from src.database import create_user, verify_user, init_db
 from src.helper import download_hugging_face_embeddings
 from langchain_pinecone import PineconeVectorStore
 # from langchain.chat_models import ChatOpenAI  # Use ChatOpenAI with Together API
@@ -70,7 +71,9 @@ def index():
 
 @app.route('/chat')
 def chat():
-    return render_template('chat.html')  # Chat interface
+    if 'user_email' not in session:
+        return redirect(url_for('signin'))
+    return render_template('chat.html')
 
 @app.route('/main')
 def main():
@@ -84,6 +87,42 @@ async def signin():
 
 
 
+
+@app.route('/signup', methods=['POST'])
+def signup():
+    data = request.get_json()
+    success = create_user(
+        data['name'],
+        data['email'],
+        data['password'],
+        data.get('symptoms'),
+        data.get('diseases')
+    )
+    
+    return jsonify({
+        'success': success,
+        'message': 'User created successfully' if success else 'User already exists!'
+    })
+
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    user = verify_user(data['email'], data['password'])
+    
+    if user:
+        session['user_email'] = user['email']
+        session['user_id'] = user['id']
+        session['user_name'] = user['name']
+        session.modified = True  # Ensure session changes are committed
+        return jsonify({
+            'success': True,
+            'redirect': '/chat'
+        })
+    else:
+        return jsonify({
+            'success': False,
+            'message': 'Invalid email or password'
+        })
 
 @app.route('/get', methods=["POST"])
 def get_response():
