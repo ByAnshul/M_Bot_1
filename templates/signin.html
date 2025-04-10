@@ -1,12 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SignUp</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styleforsignup.css') }}">
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styleforsignup.css') }}"
+    />
+    <!-- Add jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
-<body style="background-color:rgb(17, 15, 26);">
+  <body style="background-color: rgb(17, 15, 26)">
     <div class="container" id="container">
         <div class="form-container sign-up-container">
             <form id="signupForm">
@@ -17,51 +22,29 @@
                     <a href="#" class="social"><i class="fab fa-linkedin-in"></i></a>
                 </div>
                 <span>Use your email for registration</span>
-                <input type="text" id="name" placeholder="Name" required>
-                <input type="email" id="email" placeholder="Email" required>
-                <input type="password" id="password" placeholder="Password" required>
-                <input type="text" id="symptoms" placeholder="Symptoms (optional)">
-                <input type="text" id="diseases" placeholder="Existing diseases (optional)">
-                <div id="signupError" style="color: red; margin: 10px 0;"></div>
+          <input type="text" id="name" placeholder="Name" required />
+          <input type="email" id="email" placeholder="Email" required />
+          <input
+            type="password"
+            id="password"
+            placeholder="Password"
+            required
+          />
+          <div class="health-info">
+            <input
+              type="text"
+              id="symptoms"
+              placeholder="Current symptoms"
+            />
+            <input
+              type="text"
+              id="diseases"
+              placeholder="Known conditions "
+            />
+          </div>
+          <div id="signupError" style="color: red; margin: 10px 0"></div>
                 <button type="submit">Sign Up</button>
             </form>
-            <script>
-            document.getElementById('signupForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                
-                const formData = {
-                    name: document.getElementById('name').value,
-                    email: document.getElementById('email').value,
-                    password: document.getElementById('password').value,
-                    symptoms: document.getElementById('symptoms').value || null,
-                    diseases: document.getElementById('diseases').value || null
-                };
-
-                try {
-                    const response = await fetch('/signup', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(formData)
-                    });
-                    
-                    const result = await response.json();
-                    
-                    if (result.success) {
-                        document.getElementById('signupError').style.color = 'green';
-                        document.getElementById('signupError').textContent = 'Signup successful! Redirecting...';
-                        setTimeout(() => window.location.href = '/signin', 1500);
-                    } else {
-                        document.getElementById('signupError').style.color = 'red';
-                        document.getElementById('signupError').textContent = result.message;
-                    }
-                } catch (error) {
-                    document.getElementById('signupError').textContent = 'An error occurred. Please try again.';
-                    document.getElementById('signupError').style.color = 'red';
-                }
-            });
-            </script>
         </div>
         <div class="form-container sign-in-container">
             <form id="loginForm">
@@ -71,65 +54,142 @@
                     <a href="#" class="social"><i class="fab fa-google-plus-g"></i></a>
                     <a href="#" class="social"><i class="fab fa-linkedin-in"></i></a>
                 </div>
-                <input type="email" id="loginEmail" placeholder="Email" required>
-                <input type="password" id="loginPassword" placeholder="Password" required>
+          <input type="email" id="loginEmail" placeholder="Email" required />
+          <input
+            type="password"
+            id="loginPassword"
+            placeholder="Password"
+            required
+          />
                 <a href="#">Forgot your password?</a>
-                <div id="loginError" style="color: red; margin: 10px 0;"></div>
+          <div id="loginError" style="color: red; margin: 10px 0"></div>
                 <button type="submit">Sign In</button>
             </form>
-            <script>
-                document.getElementById('loginForm').addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    
-                    const loginData = {
-                        email: document.getElementById('loginEmail').value,
-                        password: document.getElementById('loginPassword').value
-                    };
-
-                    try {
-                        const response = await fetch('/login', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify(loginData)
-                        });
-                        
-                        const result = await response.json();
-                        
-                        if (result.success) {
-                            window.location.href = result.redirect;
-                        } else {
-                            document.getElementById('loginError').textContent = result.message;
-                        }
-                    } catch (error) {
-                        document.getElementById('loginError').textContent = 'An error occurred. Please try again.';
-                    }
-                });
-            </script>
         </div>
         <div class="overlay-container">
             <div class="overlay">
                 <div class="overlay-panel overlay-left">
                     <h1>Welcome Back!</h1>
-                    <p>To keep connected with us please login with your personal info</p>
+            <p>
+              To keep connected with us please login with your personal info
+            </p>
                     <button class="ghost" id="signIn">Sign In</button>
-
                 </div>
                 <div class="overlay-panel overlay-right">
                     <h1>Hello, Friend!</h1>
                     <p>Enter your personal details and start journey with us</p>
                     <button class="ghost" id="signUp">Sign Up</button>
                     <div class="Skip">
-                    <button class="ghost btn-primary" id="skipBtn" onclick="window.location.href='/main'">Skip</button>
+              <button
+                class="ghost btn-primary"
+                id="skipBtn"
+                onclick="handleGuestLogin()"
+              >
+                Skip
+              </button>
                 </div>
-
                 </div>
             </div>
         </div>
     </div>
     
-    
     <script src="{{ url_for('static', filename='main.js') }}"></script>
+    <script>
+      $(document).ready(function () {
+        // Handle login form submission
+        $("#loginForm").on("submit", function (e) {
+          e.preventDefault();
+
+          const loginData = {
+            email: $("#loginEmail").val(),
+            password: $("#loginPassword").val(),
+          };
+
+          // Clear previous error messages
+          $("#loginError").text("");
+
+          $.ajax({
+            url: "/login",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(loginData),
+            success: function (response) {
+              console.log("Login response:", response); // Debug log
+              if (response.success) {
+                window.location.href = response.redirect;
+              } else {
+                $("#loginError").text(response.message);
+              }
+            },
+            error: function (xhr, status, error) {
+              console.error("Login error:", error); // Debug log
+              $("#loginError").text("An error occurred. Please try again.");
+            },
+          });
+        });
+
+        // Handle signup form submission
+        $("#signupForm").on("submit", function (e) {
+          e.preventDefault();
+
+          const formData = {
+            name: $("#name").val(),
+            email: $("#email").val(),
+            password: $("#password").val(),
+            symptoms: $("#symptoms").val().trim() || null,
+            diseases: $("#diseases").val().trim() || null,
+          };
+
+          // Clear previous error messages
+          $("#signupError").text("");
+
+          $.ajax({
+            url: "/signup",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(formData),
+            success: function (response) {
+              console.log("Signup response:", response); // Debug log
+              if (response.success) {
+                $("#signupError").css("color", "green");
+                $("#signupError").text("Signup successful! Please log in.");
+                // Switch to login panel
+                container.classList.remove("right-panel-active");
+              } else {
+                $("#signupError").text(response.message);
+              }
+            },
+            error: function (xhr, status, error) {
+              console.error("Signup error:", error); // Debug log
+              $("#signupError").text("An error occurred. Please try again.");
+            },
+          });
+        });
+      });
+
+      // Handle guest login
+      function handleGuestLogin() {
+        console.log("Attempting guest login..."); // Debug log
+
+        $.ajax({
+          url: "/guest_login",
+          type: "POST",
+          contentType: "application/json",
+          data: JSON.stringify({}),
+          success: function (response) {
+            console.log("Guest login response:", response); // Debug log
+            if (response.success) {
+              window.location.href = response.redirect;
+            } else {
+              alert("Could not continue as guest. Please try again.");
+            }
+          },
+          error: function (xhr, status, error) {
+            console.error("Guest login error:", error); // Debug log
+            alert("An error occurred. Please try again.");
+          },
+        });
+      }
+    </script>
 </body>
 </html>

@@ -1,3 +1,116 @@
+/* Progress bar styles */
+#progressContainer {
+    width: 100%;
+    height: 6px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    margin: 10px 0;
+    overflow: hidden;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+#progressBar {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #4CAF50, #45a049);
+    border-radius: 10px;
+    transition: width 0.3s ease-in-out;
+    box-shadow: 0 1px 5px rgba(76, 175, 80, 0.3);
+}
+
+#uploadStatus {
+    display: none;
+    margin: 10px 0;
+    padding: 12px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
+    color: white;
+}
+
+#fileName {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.9);
+    margin-right: 15px;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#removeFile {
+    background: none;
+    border: none;
+    color: #ff4d4d;
+    cursor: pointer;
+    padding: 5px 10px;
+    font-size: 16px;
+    transition: color 0.3s ease;
+    border-radius: 50%;
+}
+
+#removeFile:hover {
+    color: #ff1a1a;
+    background-color: rgba(255, 26, 26, 0.1);
+}
+
+/* File upload button styles */
+.upload-btn-wrapper {
+	padding-top: 0.8rem;
+    position: relative;
+    display: inline-block;
+}
+
+.upload-btn {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 20px;
+    padding: 8px 15px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.upload-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+}
+
+.upload-btn i {
+    font-size: 18px;
+}
+
+/* File details container */
+.file-details {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    margin-top: 8px;
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Animation for progress bar */
+@keyframes progress-glow {
+    0% { box-shadow: 0 0 5px rgba(76, 175, 80, 0.5); }
+    50% { box-shadow: 0 0 20px rgba(76, 175, 80, 0.3); }
+    100% { box-shadow: 0 0 5px rgba(76, 175, 80, 0.5); }
+}
+
+#progressBar.uploading {
+    animation: progress-glow 1.5s infinite;
+}
+
 body,html{
 	height: 100%;
 	margin: 0;
@@ -226,3 +339,37 @@ border-radius: 0 0 15px 15px !important;
 	justify-content: center;
 	margin: 10px 0;
 }
+
+#progressBar {
+	transition: width 1s;
+}
+/* Styling for uploaded file display */
+
+
+.file-info {
+	display: flex;
+	justify-content: space-between;
+	width: 100%;
+}
+
+.file-name {
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	padding-right: 10px;
+}
+
+.remove-file {
+	cursor: pointer;
+	color: red;
+	font-weight: bold;
+}
+.input-group-prepend{
+	padding-top: 0.8rem;
+}
+
+
+
+
+
+

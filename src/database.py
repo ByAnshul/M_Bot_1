@@ -11,7 +11,8 @@ def init_db():
         email TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL,
         symptoms TEXT,
-        diseases TEXT
+        diseases TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     """)
     conn.commit()
@@ -49,6 +50,34 @@ def verify_user(email, password):
         return dict(user)  # Convert Row object to dictionary
     return None
 
+def update_user_health(user_id, symptoms=None, diseases=None):
+    """Update user's health information"""
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute("""
+            UPDATE users 
+            SET symptoms = ?, diseases = ?
+            WHERE id = ?
+        """, (symptoms, diseases, user_id))
+        conn.commit()
+        return True
+    except Exception as e:
+        print(f"Error updating user health: {e}")
+        return False
+    finally:
+        conn.close()
+
+def get_user_health(user_id):
+    """Get user's health information"""
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT symptoms, diseases FROM users WHERE id = ?", (user_id,))
+        user = cursor.fetchone()
+        return dict(user) if user else None
+    finally:
+        conn.close()
 
 if __name__ == "__main__":
     init_db()

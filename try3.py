@@ -1,68 +1,61 @@
-# from transformers import AutoModel, AutoTokenizer, AutoModelForSequenceClassification, AutoModelForTokenClassification, AutoModelForQuestionAnswering, pipeline
-# import torch
 
-# # Load model and tokenizer
-# model_name = "microsoft/BiomedNLP-BiomedBERT-base-uncased-abstract-fulltext"
-# tokenizer = AutoTokenizer.from_pretrained(model_name)
-# model = AutoModel.from_pretrained(model_name)
+import googlemaps
+from dotenv import load_dotenv
+import os
 
-# print("✅ Model and tokenizer loaded successfully!\n")
+# Load environment variables
+load_dotenv()
 
-# # Sample medical text
-# text = "COVID-19 is caused by the SARS-CoV-2 virus."
+def test_google_maps_api():
+    try:
+        # Initialize Google Maps client
+        api_key = os.getenv('GOOGLE_MAPS_API_KEY')
+        if not api_key:
+            print("❌ Error: GOOGLE_MAPS_API_KEY not found in .env file")
+            return
+            
+        print(f"✅ API Key loaded: {api_key[:10]}...")
+        
+        gmaps = googlemaps.Client(key=api_key)
+        
+        # Test 1: Geocoding
+        print("\n🔍 Testing Geocoding API...")
+        location = "Berlin, Germany"
+        geocode_result = gmaps.geocode(location)
+        
+        if geocode_result:
+            print(f"✅ Geocoding successful for {location}")
+            print(f"Latitude: {geocode_result[0]['geometry']['location']['lat']}")
+            print(f"Longitude: {geocode_result[0]['geometry']['location']['lng']}")
+        else:
+            print("❌ Geocoding failed")
+            
+        # Test 2: Places API
+        print("\n🔍 Testing Places API...")
+        if geocode_result:
+            lat_lng = geocode_result[0]['geometry']['location']
+            places_result = gmaps.places_nearby(
+                location=lat_lng,
+                keyword="hospital",
+                radius=5000,
+                type='hospital'
+            )
+            
+            if places_result.get('results'):
+                print(f"✅ Found {len(places_result['results'])} hospitals")
+                print("\nTop 3 hospitals:")
+                for i, hospital in enumerate(places_result['results'][:3], 1):
+                    print(f"\n{i}. {hospital['name']}")
+                    print(f"   Address: {hospital.get('vicinity', 'N/A')}")
+                    print(f"   Rating: {hospital.get('rating', 'N/A')}")
+            else:
+                print("❌ No hospitals found")
+        else:
+            print("❌ Places API test skipped due to geocoding failure")
+            
+    except Exception as e:
+        print(f"❌ Error testing Google Maps API: {str(e)}")
 
-# # 🔹 **1️⃣ Get Sentence Embeddings**
-# inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True)
-
-# with torch.no_grad():
-#     outputs = model(**inputs)
-
-# # Extract embeddings
-# embeddings = outputs.last_hidden_state
-# print("🔵 Embeddings Shape:", embeddings.shape)  # (1, sequence_length, 768)
-
-# # 🔹 **2️⃣ Medical Text Classification**
-# classifier = pipeline("text-classification", model=AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=2), tokenizer=tokenizer)
-# classification_result = classifier(text)
-# print("\n🟢 Text Classification Result:", classification_result)
-
-# # 🔹 **3️⃣ Named Entity Recognition (NER) for Biomedical Text**
-# ner_model = AutoModelForTokenClassification.from_pretrained(model_name)
-# ner_pipeline = pipeline("ner", model=ner_model, tokenizer=tokenizer)
-
-# text_ner = "Remdesivir was used to treat COVID-19 patients."
-# ner_results = ner_pipeline(text_ner)
-
-# print("\n🟡 Named Entity Recognition (NER) Results:")
-# for entity in ner_results:
-#     print(entity)
-
-# # 🔹 **4️⃣ Question Answering (Medical Q&A)**
-# qa_model = AutoModelForQuestionAnswering.from_pretrained(model_name)
-# qa_pipeline = pipeline("question-answering", model=qa_model, tokenizer=tokenizer)
-
-# question = "What causes COVID-19?"
-# context = "COVID-19 is caused by the SARS-CoV-2 virus, which spreads through respiratory droplets."
-
-# qa_result = qa_pipeline(question=question, context=context)
-# # print("\n🔴 Medical Q&A Answer:", qa_result["answer"])
-print("-------------------------------------------------------------")
-# from transformers import pipeline
-
-# # ✅ **Medical NER**
-# ner_pipeline = pipeline("ner", model="d4data/biomedical-ner-all")
-# text_ner = "Remdesivir was used to treat COVID-19 patients."
-# ner_results = ner_pipeline(text_ner)
-
-# print("\n🟡 Updated NER Results:")
-# for entity in ner_results:
-#     print(entity)
-
-# # ✅ **Medical Q&A**
-# qa_pipeline = pipeline("question-answering", model="bert-large-uncased-whole-word-masking-finetuned-squad")
-
-# question = "What causes COVID-19?"
-# context = "COVID-19 is caused by the SARS-CoV-2 virus, which spreads through respiratory droplets."
-
-# qa_result = qa_pipeline(question=question, context=context)
-# print("\n🔴 Improved Medical Q&A Answer:", qa_result["answer"])
+if __name__ == "__main__":
+    print("🚀 Starting Google Maps API Test...")
+    test_google_maps_api()

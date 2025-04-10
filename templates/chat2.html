@@ -5,8 +5,8 @@
 <!DOCTYPE html>
 <html>
 
-<head>
-  <title>Chatbot</title>
+	<head>
+		<title>Chatbot</title>
   <!-- Load jQuery first -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
@@ -411,31 +411,31 @@
   <!-- Custom CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='style111.css') }}" />
 </head>
-
-<body>
-  <div class="container-fluid h-100">
-    <div class="row justify-content-center h-100">
-      <div class="col-md-8 col-xl-6 chat">
-        <div class="card">
-          <div class="card-header msg_head">
-            <div class="d-flex bd-highlight">
-              <div class="img_cont">
+	
+	<body>
+		<div class="container-fluid h-100">
+			<div class="row justify-content-center h-100">		
+				<div class="col-md-8 col-xl-6 chat">
+					<div class="card">
+						<div class="card-header msg_head">
+							<div class="d-flex bd-highlight">
+								<div class="img_cont">
                 <img src="https://cdn-icons-png.flaticon.com/512/387/387569.png" class="rounded-circle user_img" />
-                <!-- <img src="https://www.prdistribution.com/spirit/uploads/pressreleases/2019/newsreleases/d83341deb75c4c4f6b113f27b1e42cd8-chatbot-florence-already-helps-thousands-of-patients-to-remember-their-medication.png" class="rounded-circle user_img"> -->
-                <span class="online_icon"></span>
-              </div>
-              <div class="user_info">
-                <span>Medical Chatbot</span>
-                <p>Ask me anything!</p>
+									<!-- <img src="https://www.prdistribution.com/spirit/uploads/pressreleases/2019/newsreleases/d83341deb75c4c4f6b113f27b1e42cd8-chatbot-florence-already-helps-thousands-of-patients-to-remember-their-medication.png" class="rounded-circle user_img"> -->
+									<span class="online_icon"></span>
+								</div>
+								<div class="user_info">
+									<span>Medical Chatbot</span>
+									<p>Ask me anything!</p>
                 {% if session.get('user_name') %}
                 <div class="welcome-message">
                   <span class="welcome-text">Welcome, {{ session.get('user_name')|upper }}</span>
                 </div>
                 {% endif %}
-              </div>
-            </div>
-          </div>
-          <div id="messageFormeight" class="card-body msg_card_body">
+								</div>
+							</div>
+						</div>
+						<div id="messageFormeight" class="card-body msg_card_body">
             <!-- Initial welcome message -->
             <div class="d-flex justify-content-start mb-4">
               <div class="img_cont_msg">
@@ -448,8 +448,8 @@
                 help you today? {% endif %}
               </div>
             </div>
-          </div>
-          <div class="card-footer">
+						</div>
+						<div class="card-footer">
             <!-- Medical Help Form (Initially Hidden) -->
             <div id="medicalHelpForm" class="w-100" style="display: none">
               <div class="form-group mb-0">
@@ -469,14 +469,14 @@
             </div>
 
             <!-- Message Input Group -->
-            <form id="messageArea" class="input-group">
+                            <form id="messageArea" class="input-group">
               <!-- Actions Dropdown -->
               <div class="input-group-prepend">
                 <div class="dropdown">
                   <button type="button" class="action-btn" data-toggle="dropdown" aria-haspopup="true"
                     aria-expanded="false">
-                    <i class="fas fa-plus"></i>
-                  </button>
+                                            <i class="fas fa-plus"></i>
+                                    </button>
                   <div class="dropdown-menu action-dropdown">
                     <a class="dropdown-item" href="#" id="attachFileBtn">
                       <i class="fas fa-paperclip"></i> Attach File
@@ -484,16 +484,16 @@
                     <a class="dropdown-item" href="#" id="findHelpBtn">
                       <i class="fas fa-hospital"></i> Find Help
                     </a>
-                  </div>
-                </div>
-              </div>
+                                </div>
+                                        </div>
+                                        </div>
 
               <!-- Voice Input Button -->
               <div class="input-group-prepend">
                 <button type="button" class="voice-btn" id="voiceBtn">
                   <i class="fas fa-microphone"></i>
                 </button>
-              </div>
+                                    </div>
 
               <!-- Hidden File Input -->
               <input type="file" id="fileUpload" name="file" style="display: none" />
@@ -501,21 +501,21 @@
               <!-- Message Input -->
               <input type="text" id="text" name="msg" placeholder="Type your message..." autocomplete="off"
                 class="form-control type_msg" required />
-
-              <!-- Send Button -->
-              <div class="input-group-append">
+                                
+                                <!-- Send Button -->
+                                <div class="input-group-append">
                 <button type="submit" id="send" class="input-group-text send_btn">
                   <i class="fas fa-location-arrow"></i>
                 </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script>
+                                </div>
+                            </form>
+                        </div>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<script>
     $(document).ready(function () {
       console.log("Chat page loaded and ready");
 
@@ -636,10 +636,10 @@
       // Handle form submission
       $("#messageArea").on("submit", function (event) {
         event.preventDefault();
-
-        const date = new Date();
-        const hour = date.getHours();
-        const minute = date.getMinutes();
+			
+					const date = new Date();
+					const hour = date.getHours();
+					const minute = date.getMinutes();
         const str_time = hour + ":" + (minute < 10 ? "0" : "") + minute;
         var rawText = $("#text").val().trim();
 
@@ -653,25 +653,25 @@
           lastQuestion: rawText,
           history: conversationState.history.slice(-5) // Keep last 5 exchanges
         };
-
-        // Disable input and button while waiting for response
-        $("#text").prop("disabled", true);
-        $("#send").prop("disabled", true);
-
-        var userHtml = '<div class="d-flex justify-content-end mb-4">' +
-          '<div class="msg_cotainer_send">' + rawText +
+			
+					// Disable input and button while waiting for response
+					$("#text").prop("disabled", true);
+					$("#send").prop("disabled", true);
+			
+					var userHtml = '<div class="d-flex justify-content-end mb-4">' +
+						'<div class="msg_cotainer_send">' + rawText + 
           '<span class="msg_time_send">' + str_time + "</span></div>" +
-          '<div class="img_cont_msg"><img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg"></div></div>';
-
+						'<div class="img_cont_msg"><img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg"></div></div>';
+					
         $("#text").val("");
-        $("#messageFormeight").append(userHtml);
-        $("#messageFormeight").scrollTop($("#messageFormeight")[0].scrollHeight);
-
+					$("#messageFormeight").append(userHtml);
+					$("#messageFormeight").scrollTop($("#messageFormeight")[0].scrollHeight);
+			
         // Show loading animation AFTER the user message is added
         showLoadingAnimation();
-
-        $.ajax({
-          url: "/get",
+			
+					$.ajax({
+						url: "/get",
           type: "POST",
           data: {
             msg: rawText,
@@ -684,8 +684,8 @@
             hideLoadingAnimation();
 
             // Enable input and button
-            $("#text").prop("disabled", false);
-            $("#send").prop("disabled", false);
+						$("#text").prop("disabled", false);
+						$("#send").prop("disabled", false);
 
             // Update conversation state
             conversationState.history.push({
@@ -697,14 +697,14 @@
             if (conversationState.history.length > 5) {
               conversationState.history = conversationState.history.slice(-5);
             }
-
-            var botHtml = '<div class="d-flex justify-content-start mb-4">' +
+			
+						var botHtml = '<div class="d-flex justify-content-start mb-4">' +
               '<div class="img_cont_msg"><img src="static/images/nurse.png" class="rounded-circle user_img_msg"></div>' +
               '<div class="msg_cotainer">' + (data.response || data) +
               '<span class="msg_time">' + str_time + "</span></div></div>";
-
-            $("#messageFormeight").append($.parseHTML(botHtml));
-            $("#messageFormeight").scrollTop($("#messageFormeight")[0].scrollHeight);
+						
+						$("#messageFormeight").append($.parseHTML(botHtml));
+						$("#messageFormeight").scrollTop($("#messageFormeight")[0].scrollHeight);
           },
           error: function (jqXHR, textStatus, errorThrown) {
             console.error("AJAX Error:", textStatus, errorThrown);
@@ -726,18 +726,18 @@
             $("#messageFormeight").append($.parseHTML(errorHtml));
             $("#messageFormeight").scrollTop($("#messageFormeight")[0].scrollHeight);
           }
-        });
-      });
+					});
+				});
 
       // File upload handling
       $("#attachFileBtn").click(function () {
         console.log("Attach file button clicked");
         $("#fileUpload").click();
-      });
+			});
 
       $("#fileUpload").on("change", function (e) {
-        const file = e.target.files[0];
-        if (file) {
+                    const file = e.target.files[0];
+                    if (file) {
           if (!file.type.includes("pdf")) {
             alert("Please upload a PDF file");
             return;
@@ -758,18 +758,18 @@
           // Show loading animation
           showLoadingAnimation();
 
-          // Create FormData and append file
-          const formData = new FormData();
+                        // Create FormData and append file
+                        const formData = new FormData();
           formData.append("file", file);
 
-          // Configure XMLHttpRequest
-          const xhr = new XMLHttpRequest();
+                        // Configure XMLHttpRequest
+                        const xhr = new XMLHttpRequest();
           xhr.open("POST", "/upload", true);
 
-          // Upload progress handler
+                        // Upload progress handler
           xhr.upload.addEventListener("progress", function (e) {
-            if (e.lengthComputable) {
-              const percent = (e.loaded / e.total) * 100;
+                            if (e.lengthComputable) {
+                                const percent = (e.loaded / e.total) * 100;
               $("#progressBar").css("width", percent + "%");
               console.log("Upload progress:", percent + "%");
 
@@ -784,7 +784,7 @@
 
           // Handle completion
           xhr.onload = function () {
-            if (xhr.status === 200) {
+                            if (xhr.status === 200) {
               const response = JSON.parse(xhr.responseText);
               console.log("File upload successful:", response);
 
@@ -861,7 +861,7 @@
                   $("#fileUpload").val("");
                 }, 3000);
               }, 300);
-            } else {
+                            } else {
               const error = JSON.parse(xhr.responseText);
               console.error("File upload error:", error);
 
@@ -890,10 +890,10 @@
                 $("#progressBar").css("width", "0%");
                 $("#fileUpload").val("");
               }, 3000);
-            }
-          };
+                            }
+                        };
 
-          // Handle errors
+                        // Handle errors
           xhr.onerror = function () {
             console.error("File upload network error");
 
@@ -922,12 +922,12 @@
               $("#progressBar").css("width", "0%");
               $("#fileUpload").val("");
             }, 3000);
-          };
+                        };
 
-          // Send the request
-          xhr.send(formData);
-        }
-      });
+                        // Send the request
+                        xhr.send(formData);
+                    }
+                });
 
       // Remove file handler
       $("#removeFile").click(function () {
@@ -1161,7 +1161,7 @@
       });
     });
   </script>
-</body>
+    </body>
 
 </html>
 
