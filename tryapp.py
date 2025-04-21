@@ -2,6 +2,7 @@ from flask import Flask, render_template, jsonify, request, redirect, url_for, s
 import os
 from dotenv import load_dotenv
 import subprocess
+import time
 from werkzeug.utils import secure_filename
 import tempfile
 import uuid
@@ -65,7 +66,19 @@ llm = ChatOpenAI(
 
 # Build prompt chain with context
 prompt = ChatPromptTemplate.from_messages([
-    ("system", get_system_prompt() + "\n\nPrevious conversation context:\n{context}"),
+    ("system", """You are a medical assistant helping with health-related questions. 
+    
+Previous conversation history (please pay careful attention to this context):
+{context}
+
+Guidelines:
+1. Always directly reference and follow up on the most recent conversation exchanges
+2. Maintain continuity with previous messages 
+3. Only retrieve information from medical documents when directly relevant
+4. Be concise yet thorough in your answers
+5. If the user asks about a topic they previously mentioned, refer to that earlier context
+6. Ignore any unrelated information from earlier in the conversation that is not relevant to the current question
+"""),
     ("human", "{input}"),
 ])
 
@@ -100,6 +113,8 @@ def init_session():
         session['conversation_history'] = []
     if 'current_context' not in session:
         session['current_context'] = {}
+    if 'uploaded_docs' not in session:
+        session['uploaded_docs'] = []
 
 def format_conversation_history():
     """Format conversation history for context"""
@@ -107,10 +122,12 @@ def format_conversation_history():
         return ""
     
     formatted_history = []
-    for exchange in session['conversation_history'][-5:]:  # Get last 5 exchanges
+    for exchange in session['conversation_history'][-10:]:  # Get last 10 exchanges
         formatted_history.append(f"User: {exchange['user']}")
         formatted_history.append(f"Assistant: {exchange['assistant']}")
-    return "\n".join(formatted_history)
+    
+    # Convert to string with clear separation between exchanges
+    return "\n\n".join(formatted_history)
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -144,14 +161,14 @@ def chat():
         print("No user_id in session, redirecting to signin")  # Debug log
         return redirect(url_for('signin'))
         
-    return render_template('chat.html')
+    return render_template('chat2.html')
 
 @app.route('/main')
 def main():
     # Redirect to signin if not logged in
     if 'user_id' not in session:
         return redirect(url_for('signin'))
-    return render_template('chat.html')
+    return render_template('chat2.html')
 
 @app.get("/signin")  # Add this route
 async def signin():
@@ -250,8 +267,10 @@ def get_response():
         # Initialize session if needed
         init_session()
         
-        # Get conversation context
+        # Get conversation history
         context = format_conversation_history()
+        print(f"Current context length: {len(context)}")
+        print(f"Context: {context}")
         
         # Get user's health information
         health_info = None
@@ -276,19 +295,29 @@ def get_response():
             search_kwargs=search_kwargs
         )
         
-        # Create new chain with updated retriever
-        rag_chain = create_retrieval_chain(
-            retriever,
-            question_answer_chain
-        )
+        # Instead of using the retrieval chain directly, we'll do a simplified approach
+        # First, get relevant documents
+        relevant_docs = retriever.get_relevant_documents(msg)
         
-        # Get relevant documents from Pinecone
-        response = rag_chain.invoke({
-            "input": msg,
-            "context": context
-        })
-        answer = response["answer"]
-    
+        # Create a simplified prompt that explicitly includes the conversation history
+        conversation_prompt = f"""You are a medical assistant helping with health-related questions.
+
+CONVERSATION HISTORY:
+{context}
+
+USER'S QUESTION: {msg}
+
+RELEVANT MEDICAL INFORMATION:
+{relevant_docs[0].page_content if relevant_docs else "No specific medical information available."}
+
+Please answer the user's question while maintaining context from the conversation history.
+Focus specifically on responding to "{msg}" in the context of our discussion about asthma or other medical topics we've been discussing.
+"""
+        
+        # Use the LLM directly
+        response = llm.invoke(conversation_prompt)
+        answer = response.content
+        
         # Customize response based on user's health information
         if health_info:
             answer = customize_response(
@@ -299,28 +328,28 @@ def get_response():
         
         print("Response:", answer)
             
-            # Update conversation history in session
+        # Update conversation history in session
         session['conversation_history'].append({
-                "user": msg,
-                "assistant": answer
-            })
+            "user": msg,
+            "assistant": answer
+        })
             
-            # Keep only last 5 exchanges
-        if len(session['conversation_history']) > 5:
-                session['conversation_history'] = session['conversation_history'][-5:]
+        # Keep only last 10 exchanges
+        if len(session['conversation_history']) > 10:
+            session['conversation_history'] = session['conversation_history'][-10:]
             
-            # Update current context
+        # Update current context
         session['current_context'] = {
-                "last_question": msg,
-                "last_answer": answer
-            }
+            "last_question": msg,
+            "last_answer": answer
+        }
         
         # Ensure session changes are saved
         session.modified = True
         
         return str(answer)
     except Exception as e:
-        print("Error:", str(e))
+        print(f"Error: {str(e)}")
         return "I apologize, but I encountered an error while processing your question. Please try again."
 
 @app.route("/upload", methods=["POST"])
@@ -379,7 +408,14 @@ def upload_file():
             'upload_time': datetime.now().isoformat()
         }
         
+        # Store doc_id in session
+        if 'uploaded_docs' not in session:
+            session['uploaded_docs'] = []
+        session['uploaded_docs'].append(doc_id)
+        session.modified = True
+        
         print(f"Successfully processed and stored {filename}")
+        print(f"Session uploaded_docs: {session['uploaded_docs']}")
         
         # Clean up temporary files
         os.remove(file_path)
@@ -466,7 +502,8 @@ def get_summary():
             return jsonify({'error': 'No document ID provided'}), 400
             
         print(f"Generating summary for doc_id: {doc_id}")  # Debug log
-        
+        time.sleep(0.4)  # 0.2 seconds = 200 milliseconds
+
         # Get document chunks from Pinecone
         results = docsearch.similarity_search(
             query="",
@@ -610,6 +647,35 @@ def find_medical_help():
         return jsonify({
             'success': False,
             'message': f'An error occurred while finding medical help: {str(e)}'
+        }), 500
+
+@app.route("/clear_conversation", methods=["POST"])
+def clear_conversation():
+    """Clear the conversation history in the session"""
+    try:
+        # Keep the uploaded docs but clear conversation
+        uploaded_docs_backup = session.get('uploaded_docs', [])
+        
+        # Clear session
+        session['conversation_history'] = []
+        session['current_context'] = {}
+        
+        # Restore uploaded docs 
+        session['uploaded_docs'] = uploaded_docs_backup
+        session.modified = True
+        
+        print("Conversation history cleared")
+        
+        return jsonify({
+            'success': True,
+            'message': 'Conversation history cleared successfully'
+        }), 200
+        
+    except Exception as e:
+        print(f"Error clearing conversation: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': f'Error clearing conversation: {str(e)}'
         }), 500
 
 # Optional: Route to start the Flask app as a subprocess

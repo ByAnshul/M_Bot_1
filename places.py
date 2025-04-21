@@ -115,6 +115,13 @@ class MedicalPlacesSystem:
     (23, "Pediatrician", "Child health specialist"),
     (24, "Hematologist", "Blood disease specialist"),
     (25, "Dentist", "Oral health and teeth specialist"),
+    (26, "Genetic Counselor", "Specialist in genetic disorders and family history analysis"),
+    (27, "Nutritionist", "Expert in dietary planning and nutritional guidance"),
+    (28, "Physiotherapist", "Specialist in physical rehabilitation and exercise therapy"),
+    (29, "Neurosurgeon", "Specialist in brain and spinal surgeries"),
+    (30, "Radiologist", "Expert in interpreting medical images such as X-rays, CT scans, and MRIs"),
+    (31, "Pathologist", "Specialist in diagnosing diseases based on laboratory analysis of bodily fluids and tissues")
+    
     
 ]
 
@@ -155,6 +162,16 @@ class MedicalPlacesSystem:
     (28, "Anemia", 24, "fatigue,pale skin,shortness of breath,dizziness"),
     (29, "Tooth Decay", 25, "toothache,sensitivity,visible holes in teeth"),
     (30, "Otitis Media", 20, "ear pain,hearing difficulty,fever,fluid drainage from ear"),
+    (31, "Dengue Fever", 4, "high fever,severe headache,joint and muscle pain,rash,bleeding gums"),
+    (32, "Malaria", 4, "cyclical fever,chills,headache,muscle pain,anemia"),
+    (33, "Lung Cancer", 19, "persistent cough,chest pain,weight loss,shortness of breath,hemoptysis"),
+    (34, "Acute Gastroenteritis", 14, "watery diarrhea,vomiting,abdominal cramps,fever"),
+    (35, "Obesity", 5, "excessive weight,fatigue,joint pain,sleep disturbances"),
+    (36, "COPD", 6, "chronic cough,shortness of breath,frequent respiratory infections,wheezing"),
+    (37, "Kidney Stones", 17, "severe back pain,blood in urine,nausea,vomiting"),
+    (38, "Appendicitis", 7, "abdominal pain,fever,nausea,loss of appetite"),
+    (39, "Hyperthyroidism", 5, "rapid heartbeat,weight loss,anxiety,tremors,heat intolerance"),
+    (40, "Hypothyroidism", 5, "fatigue,weight gain,cold intolerance,dry skin,constipation")
 ]
 
 
@@ -295,19 +312,27 @@ class MedicalPlacesSystem:
 
         print(f"Found {len(hospitals)} hospitals")
         
-        # Create a more concise initial response
-        initial_response = f"**Medical Help for {disease_name}**\n\n"
-        initial_response += f"Based on your symptoms, you should consult a:\n"
-        initial_response += f"**{specialist.name}**\n\n"
-        initial_response += f"**Nearby Hospitals in {location}:**\n\n"
-        
+        # Use HTML formatting to ensure proper spacing
+        initial_response = f"<div class='medical-help-result'>"
+        initial_response += f"<h3>Medical Help for {disease_name}</h3>"
+        initial_response += f"<p>Based on your symptoms, you should consult a:</p>"
+        initial_response += f"<p class='specialist-name'><strong>{specialist.name}</strong></p>"
+        initial_response += f"<h4>Recommended Hospitals in {location}:</h4>"
+        initial_response += f"<div class='hospital-list'>"
+
         for i, hospital in enumerate(hospitals, 1):
-            initial_response += f"{i}. **{hospital.name}**\n"
-            initial_response += f"   📍 {hospital.address}\n"
+            initial_response += f"<div class='hospital-item'>"
+            initial_response += f"<p class='hospital-number'>{i}. <strong>{hospital.name}</strong></p>"
+            initial_response += f"<p class='hospital-address'>📍 {hospital.address}</p>"
             if hospital.rating > 0:
+                # Create stars based on the integer part of the rating
                 stars = "⭐" * int(hospital.rating)
-                initial_response += f"   {stars} ({hospital.rating}/5)\n"
-            initial_response += "\n"
+                initial_response += f"<p class='hospital-rating'>Rating: {stars} ({hospital.rating}/5)</p>"
+            else:
+                initial_response += "<p class='hospital-rating'>Rating: Not available</p>"
+            initial_response += f"</div>"
+        
+        initial_response += f"</div></div>"
 
         # Send to Together API for better formatting
         try:

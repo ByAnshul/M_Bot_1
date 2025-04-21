@@ -5,8 +5,8 @@
 <!DOCTYPE html>
 <html>
 
-	<head>
-		<title>Chatbot</title>
+<head>
+  <title>Chatbot</title>
   <!-- Load jQuery first -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
@@ -79,10 +79,21 @@
 
     .msg_cotainer {
       max-width: 80%;
+      white-space: normal;
+      word-wrap: break-word;
     }
 
     .msg_cotainer_send {
       max-width: 80%;
+      white-space: normal;
+      word-wrap: break-word;
+    }
+
+    /* Style for medical help response */
+    .msg_cotainer br {
+      display: block;
+      content: "";
+      margin-top: 5px;
     }
 
     /* Voice Input Button Styles */
@@ -145,7 +156,7 @@
       color: rgba(255, 255, 255, 0.7) !important;
     }
 
-    /* Add these styles to your existing CSS */
+    /* Medical Help Button Styles */
     .medical-help-btn {
       background-color: #4caf50;
       border: none;
@@ -192,6 +203,7 @@
       margin-bottom: 10px;
     }
 
+    /* Upload Button Styles */
     .upload-btn-wrapper {
       padding-top: 0;
       position: relative;
@@ -233,7 +245,7 @@
       padding: 0 20px;
     }
 
-    /* Add loading animation styles */
+    /* Loading Animation Styles */
     .loader {
       display: flex;
       align-items: center;
@@ -271,7 +283,7 @@
       }
     }
 
-    /* Add loading container styles */
+    /* Loading Container Styles */
     .loading-container {
       display: none;
       margin-bottom: 1rem;
@@ -291,9 +303,7 @@
       margin-left: 10px;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
       width: 100px;
-      /* Fixed width */
       height: 40px;
-      /* Fixed height */
     }
 
     .loaderRectangle div {
@@ -399,6 +409,126 @@
         height: 15px;
       }
     }
+
+    /* Welcome Message Styles */
+    .welcome-message {
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255, 255, 255, 0.1);
+      padding: 5px 15px;
+      border-radius: 20px;
+      animation: slideIn 0.5s ease-out;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .welcome-text {
+      color: #4caf50;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translate(20px, -50%);
+      }
+
+      to {
+        opacity: 1;
+        transform: translate(0, -50%);
+      }
+    }
+
+    /* Action Dropdown Styles */
+    .dropdown-menu.action-dropdown {
+      background-color: rgba(0, 0, 0, 0.8) !important;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 0;
+      min-width: 200px;
+      transform: translateY(-100%);
+      top: -5px !important;
+      bottom: auto !important;
+      left: 0 !important;
+      right: auto !important;
+    }
+
+    .dropdown-menu.action-dropdown .dropdown-item {
+      color: white;
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.3s ease;
+    }
+
+    .dropdown-menu.action-dropdown .dropdown-item:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+
+    .dropdown-menu.action-dropdown .dropdown-item i {
+      width: 20px;
+      text-align: center;
+    }
+
+    /* Specific styles for medical help results */
+    .medical-help-result {
+      display: block;
+      width: 100%;
+    }
+
+    .medical-help-result h3 {
+      font-size: 18px;
+      font-weight: bold;
+      margin: 0 0 10px 0;
+      color: #ffffff;
+    }
+
+    .medical-help-result h4 {
+      font-size: 16px;
+      font-weight: bold;
+      margin: 10px 0;
+      color: #ffffff;
+    }
+
+    .medical-help-result p {
+      margin: 5px 0;
+      line-height: 1.4;
+    }
+
+    .specialist-name {
+      margin: 5px 0 15px 0 !important;
+    }
+
+    .hospital-list {
+      display: block;
+      margin-top: 10px;
+    }
+
+    .hospital-item {
+      display: block;
+      margin-bottom: 15px;
+      padding-left: 5px;
+    }
+
+    .hospital-number {
+      margin: 0 0 5px 0 !important;
+      font-weight: 500;
+    }
+
+    .hospital-address {
+      margin: 0 0 5px 15px !important;
+      opacity: 0.9;
+    }
+
+    .hospital-rating {
+      margin: 0 0 5px 15px !important;
+      opacity: 0.9;
+    }
   </style>
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
@@ -411,31 +541,38 @@
   <!-- Custom CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='style111.css') }}" />
 </head>
-	
-	<body>
-		<div class="container-fluid h-100">
-			<div class="row justify-content-center h-100">		
-				<div class="col-md-8 col-xl-6 chat">
-					<div class="card">
-						<div class="card-header msg_head">
-							<div class="d-flex bd-highlight">
-								<div class="img_cont">
+
+<body>
+  <div class="container-fluid h-100">
+    <div class="row justify-content-center h-100">
+      <div class="col-md-10 col-xl-8 chat">
+
+        <div class="card">
+          <div class="card-header msg_head">
+            <div class="d-flex bd-highlight">
+              <div class="img_cont">
                 <img src="https://cdn-icons-png.flaticon.com/512/387/387569.png" class="rounded-circle user_img" />
-									<!-- <img src="https://www.prdistribution.com/spirit/uploads/pressreleases/2019/newsreleases/d83341deb75c4c4f6b113f27b1e42cd8-chatbot-florence-already-helps-thousands-of-patients-to-remember-their-medication.png" class="rounded-circle user_img"> -->
-									<span class="online_icon"></span>
-								</div>
-								<div class="user_info">
-									<span>Medical Chatbot</span>
-									<p>Ask me anything!</p>
+                <!-- <img src="https://www.prdistribution.com/spirit/uploads/pressreleases/2019/newsreleases/d83341deb75c4c4f6b113f27b1e42cd8-chatbot-florence-already-helps-thousands-of-patients-to-remember-their-medication.png" class="rounded-circle user_img"> -->
+                <span class="online_icon"></span>
+              </div>
+              <div class="user_info">
+                <span>Medical Chatbot</span>
+                <p>Ask me anything!</p>
                 {% if session.get('user_name') %}
                 <div class="welcome-message">
                   <span class="welcome-text">Welcome, {{ session.get('user_name')|upper }}</span>
                 </div>
                 {% endif %}
-								</div>
-							</div>
-						</div>
-						<div id="messageFormeight" class="card-body msg_card_body">
+              </div>
+              <div class="ml-auto">
+                <button id="clearConversationBtn" class="btn btn-sm action-btn" title="Clear Conversation">
+                  <i class="fas fa-trash"></i> Clear Chat
+                </button>
+              </div>
+            </div>
+          </div>
+          <div id="messageFormeight" class="card-body msg_card_body">
+            <div id="chat-response" style="white-space: pre-wrap;"></div>
             <!-- Initial welcome message -->
             <div class="d-flex justify-content-start mb-4">
               <div class="img_cont_msg">
@@ -448,8 +585,8 @@
                 help you today? {% endif %}
               </div>
             </div>
-						</div>
-						<div class="card-footer">
+          </div>
+          <div class="card-footer">
             <!-- Medical Help Form (Initially Hidden) -->
             <div id="medicalHelpForm" class="w-100" style="display: none">
               <div class="form-group mb-0">
@@ -469,14 +606,14 @@
             </div>
 
             <!-- Message Input Group -->
-                            <form id="messageArea" class="input-group">
+            <form id="messageArea" class="input-group">
               <!-- Actions Dropdown -->
               <div class="input-group-prepend">
                 <div class="dropdown">
                   <button type="button" class="action-btn" data-toggle="dropdown" aria-haspopup="true"
                     aria-expanded="false">
-                                            <i class="fas fa-plus"></i>
-                                    </button>
+                    <i class="fas fa-plus"></i>
+                  </button>
                   <div class="dropdown-menu action-dropdown">
                     <a class="dropdown-item" href="#" id="attachFileBtn">
                       <i class="fas fa-paperclip"></i> Attach File
@@ -484,16 +621,21 @@
                     <a class="dropdown-item" href="#" id="findHelpBtn">
                       <i class="fas fa-hospital"></i> Find Help
                     </a>
-                                </div>
-                                        </div>
-                                        </div>
+                    <a class="dropdown-item" href="https://www.1mg.com/online-doctor-consultation" target="_blank"
+                      id="consultBtn">
+                      <i class="fas fa-user-md"></i> Consult Doctor
+                    </a>
+
+                  </div>
+                </div>
+              </div>
 
               <!-- Voice Input Button -->
               <div class="input-group-prepend">
                 <button type="button" class="voice-btn" id="voiceBtn">
                   <i class="fas fa-microphone"></i>
                 </button>
-                                    </div>
+              </div>
 
               <!-- Hidden File Input -->
               <input type="file" id="fileUpload" name="file" style="display: none" />
@@ -501,21 +643,21 @@
               <!-- Message Input -->
               <input type="text" id="text" name="msg" placeholder="Type your message..." autocomplete="off"
                 class="form-control type_msg" required />
-                                
-                                <!-- Send Button -->
-                                <div class="input-group-append">
+
+              <!-- Send Button -->
+              <div class="input-group-append">
                 <button type="submit" id="send" class="input-group-text send_btn">
                   <i class="fas fa-location-arrow"></i>
                 </button>
-                                </div>
-                            </form>
-                        </div>
-					</div>
-				</div>
-			</div>
-		</div>
-		
-		<script>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
     $(document).ready(function () {
       console.log("Chat page loaded and ready");
 
@@ -636,10 +778,10 @@
       // Handle form submission
       $("#messageArea").on("submit", function (event) {
         event.preventDefault();
-			
-					const date = new Date();
-					const hour = date.getHours();
-					const minute = date.getMinutes();
+
+        const date = new Date();
+        const hour = date.getHours();
+        const minute = date.getMinutes();
         const str_time = hour + ":" + (minute < 10 ? "0" : "") + minute;
         var rawText = $("#text").val().trim();
 
@@ -653,25 +795,25 @@
           lastQuestion: rawText,
           history: conversationState.history.slice(-5) // Keep last 5 exchanges
         };
-			
-					// Disable input and button while waiting for response
-					$("#text").prop("disabled", true);
-					$("#send").prop("disabled", true);
-			
-					var userHtml = '<div class="d-flex justify-content-end mb-4">' +
-						'<div class="msg_cotainer_send">' + rawText + 
+
+        // Disable input and button while waiting for response
+        $("#text").prop("disabled", true);
+        $("#send").prop("disabled", true);
+
+        var userHtml = '<div class="d-flex justify-content-end mb-4">' +
+          '<div class="msg_cotainer_send">' + rawText +
           '<span class="msg_time_send">' + str_time + "</span></div>" +
-						'<div class="img_cont_msg"><img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg"></div></div>';
-					
+          '<div class="img_cont_msg"><img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg"></div></div>';
+
         $("#text").val("");
-					$("#messageFormeight").append(userHtml);
-					$("#messageFormeight").scrollTop($("#messageFormeight")[0].scrollHeight);
-			
+        $("#messageFormeight").append(userHtml);
+        $("#messageFormeight").scrollTop($("#messageFormeight")[0].scrollHeight);
+
         // Show loading animation AFTER the user message is added
         showLoadingAnimation();
-			
-					$.ajax({
-						url: "/get",
+
+        $.ajax({
+          url: "/get",
           type: "POST",
           data: {
             msg: rawText,
@@ -684,8 +826,8 @@
             hideLoadingAnimation();
 
             // Enable input and button
-						$("#text").prop("disabled", false);
-						$("#send").prop("disabled", false);
+            $("#text").prop("disabled", false);
+            $("#send").prop("disabled", false);
 
             // Update conversation state
             conversationState.history.push({
@@ -697,14 +839,14 @@
             if (conversationState.history.length > 5) {
               conversationState.history = conversationState.history.slice(-5);
             }
-			
-						var botHtml = '<div class="d-flex justify-content-start mb-4">' +
+
+            var botHtml = '<div class="d-flex justify-content-start mb-4">' +
               '<div class="img_cont_msg"><img src="static/images/nurse.png" class="rounded-circle user_img_msg"></div>' +
               '<div class="msg_cotainer">' + (data.response || data) +
               '<span class="msg_time">' + str_time + "</span></div></div>";
-						
-						$("#messageFormeight").append($.parseHTML(botHtml));
-						$("#messageFormeight").scrollTop($("#messageFormeight")[0].scrollHeight);
+
+            $("#messageFormeight").append($.parseHTML(botHtml));
+            $("#messageFormeight").scrollTop($("#messageFormeight")[0].scrollHeight);
           },
           error: function (jqXHR, textStatus, errorThrown) {
             console.error("AJAX Error:", textStatus, errorThrown);
@@ -726,18 +868,18 @@
             $("#messageFormeight").append($.parseHTML(errorHtml));
             $("#messageFormeight").scrollTop($("#messageFormeight")[0].scrollHeight);
           }
-					});
-				});
+        });
+      });
 
       // File upload handling
       $("#attachFileBtn").click(function () {
         console.log("Attach file button clicked");
         $("#fileUpload").click();
-			});
+      });
 
       $("#fileUpload").on("change", function (e) {
-                    const file = e.target.files[0];
-                    if (file) {
+        const file = e.target.files[0];
+        if (file) {
           if (!file.type.includes("pdf")) {
             alert("Please upload a PDF file");
             return;
@@ -758,18 +900,18 @@
           // Show loading animation
           showLoadingAnimation();
 
-                        // Create FormData and append file
-                        const formData = new FormData();
+          // Create FormData and append file
+          const formData = new FormData();
           formData.append("file", file);
 
-                        // Configure XMLHttpRequest
-                        const xhr = new XMLHttpRequest();
+          // Configure XMLHttpRequest
+          const xhr = new XMLHttpRequest();
           xhr.open("POST", "/upload", true);
 
-                        // Upload progress handler
+          // Upload progress handler
           xhr.upload.addEventListener("progress", function (e) {
-                            if (e.lengthComputable) {
-                                const percent = (e.loaded / e.total) * 100;
+            if (e.lengthComputable) {
+              const percent = (e.loaded / e.total) * 100;
               $("#progressBar").css("width", percent + "%");
               console.log("Upload progress:", percent + "%");
 
@@ -784,7 +926,7 @@
 
           // Handle completion
           xhr.onload = function () {
-                            if (xhr.status === 200) {
+            if (xhr.status === 200) {
               const response = JSON.parse(xhr.responseText);
               console.log("File upload successful:", response);
 
@@ -861,7 +1003,7 @@
                   $("#fileUpload").val("");
                 }, 3000);
               }, 300);
-                            } else {
+            } else {
               const error = JSON.parse(xhr.responseText);
               console.error("File upload error:", error);
 
@@ -890,10 +1032,10 @@
                 $("#progressBar").css("width", "0%");
                 $("#fileUpload").val("");
               }, 3000);
-                            }
-                        };
+            }
+          };
 
-                        // Handle errors
+          // Handle errors
           xhr.onerror = function () {
             console.error("File upload network error");
 
@@ -922,12 +1064,12 @@
               $("#progressBar").css("width", "0%");
               $("#fileUpload").val("");
             }, 3000);
-                        };
+          };
 
-                        // Send the request
-                        xhr.send(formData);
-                    }
-                });
+          // Send the request
+          xhr.send(formData);
+        }
+      });
 
       // Remove file handler
       $("#removeFile").click(function () {
@@ -1098,15 +1240,19 @@
             hideLoadingAnimation();
 
             if (response.success) {
+              // Format the response to preserve line breaks
+              const formattedResponse = response.response.replace(/\n/g, "<br>");
+
               const botHtml =
                 '<div class="d-flex justify-content-start mb-4">' +
                 '<div class="img_cont_msg"><img src="static/images/nurse.png" class="rounded-circle user_img_msg"></div>' +
                 '<div class="msg_cotainer">' +
-                response.response +
+                formattedResponse +
                 '<span class="msg_time">' +
                 str_time +
                 "</span></div></div>";
 
+              // Append to messageFormeight instead of replacing chat-response content
               $("#messageFormeight").append($.parseHTML(botHtml));
             } else {
               const errorHtml =
@@ -1159,393 +1305,37 @@
           },
         });
       });
+
+      // Add handler for clear conversation button
+      $("#clearConversationBtn").click(function () {
+        if (confirm("Are you sure you want to clear the conversation history? This cannot be undone.")) {
+          $.ajax({
+            url: "/clear_conversation",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({}),
+            success: function (response) {
+              console.log("Conversation cleared:", response);
+              // Clear the chat UI
+              $("#messageFormeight").empty();
+              // Add a system message
+              const systemMessage =
+                '<div class="d-flex justify-content-start mb-4">' +
+                '<div class="img_cont_msg"><img src="static/images/nurse.png" class="rounded-circle user_img_msg"></div>' +
+                '<div class="msg_cotainer">' +
+                'Conversation history has been cleared. How can I help you today?' +
+                '</div></div>';
+              $("#messageFormeight").append($.parseHTML(systemMessage));
+            },
+            error: function (xhr, status, error) {
+              console.error("Error clearing conversation:", error);
+              alert("Failed to clear conversation. Please try again.");
+            }
+          });
+        }
+      });
     });
   </script>
-    </body>
+</body>
 
 </html>
-
-<style>
-  .welcome-message {
-    position: absolute;
-    right: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: rgba(255, 255, 255, 0.1);
-    padding: 5px 15px;
-    border-radius: 20px;
-    animation: slideIn 0.5s ease-out;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  }
-
-  .welcome-text {
-    color: #4caf50;
-    font-size: 14px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-  }
-
-  @keyframes slideIn {
-    from {
-      opacity: 0;
-      transform: translate(20px, -50%);
-    }
-
-    to {
-      opacity: 1;
-      transform: translate(0, -50%);
-    }
-  }
-
-  .msg_cotainer {
-    max-width: 80%;
-  }
-
-  .msg_cotainer_send {
-    max-width: 80%;
-  }
-
-  /* Voice Input Button Styles */
-  .voice-btn {
-    background-color: rgba(255, 255, 255, 0.1);
-    border: none;
-    border-radius: 20px;
-    padding: 8px 15px;
-    color: white;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 5px;
-    width: 40px;
-    height: 40px;
-  }
-
-  .voice-btn:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-    transform: translateY(-1px);
-  }
-
-  .voice-btn i {
-    font-size: 18px;
-  }
-
-  .voice-btn.recording {
-    background-color: #ff4d4d;
-    animation: pulse 1.5s infinite;
-  }
-
-  @keyframes pulse {
-    0% {
-      transform: scale(1);
-    }
-
-    50% {
-      transform: scale(1.1);
-    }
-
-    100% {
-      transform: scale(1);
-    }
-  }
-
-  /* Adjust spacing for input group */
-  .input-group-prepend {
-    margin-right: 5px;
-  }
-
-  .type_msg {
-    margin-left: 5px;
-    border-radius: 20px !important;
-    color: white !important;
-  }
-
-  .type_msg::placeholder {
-    color: rgba(255, 255, 255, 0.7) !important;
-  }
-
-  /* Add these styles to your existing CSS */
-  .medical-help-btn {
-    background-color: #4caf50;
-    border: none;
-    border-radius: 20px;
-    padding: 8px 20px;
-    color: white;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  }
-
-  .medical-help-btn:hover {
-    background-color: #45a049;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  }
-
-  .medical-help-btn i {
-    font-size: 16px;
-  }
-
-  #medicalHelpForm {
-    background-color: rgba(0, 0, 0, 0.2);
-    padding: 10px;
-    border-radius: 10px;
-    margin-bottom: 10px;
-  }
-
-  #medicalHelpForm .form-group {
-    margin-bottom: 5px;
-  }
-
-  #medicalHelpForm .btn {
-    margin-right: 5px;
-  }
-
-  .medical-help-container {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 10px;
-  }
-
-  .upload-btn-wrapper {
-    padding-top: 0;
-    position: relative;
-    display: inline-block;
-  }
-
-  .upload-btn {
-    background-color: rgba(255, 255, 255, 0.1);
-    border: none;
-    border-radius: 20px;
-    padding: 8px 15px;
-    color: white;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-  }
-
-  .upload-btn:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-    transform: translateY(-1px);
-  }
-
-  .upload-btn i {
-    font-size: 18px;
-  }
-
-  .input-group {
-    background-color: rgba(0, 0, 0, 0.3);
-    border-radius: 25px;
-    padding: 5px;
-  }
-
-  .send_btn {
-    border-radius: 20px !important;
-    padding: 0 20px;
-  }
-
-  /* Add loading animation styles */
-  .loader {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.8rem;
-    padding: 1rem;
-  }
-
-  .loader div {
-    background-color: rgb(34, 34, 34);
-    box-shadow: inset 2px 2px 10px black;
-    border-radius: 100%;
-    height: 1rem;
-    width: 1rem;
-  }
-
-  .box-load1 {
-    animation: brighten 1.2s infinite;
-  }
-
-  .box-load2 {
-    animation: brighten 1.2s infinite;
-    animation-delay: 0.2s;
-  }
-
-  .box-load3 {
-    animation: brighten 1.2s infinite;
-    animation-delay: 0.4s;
-  }
-
-  @keyframes brighten {
-    100% {
-      background-color: rgb(165, 165, 165);
-      box-shadow: none;
-    }
-  }
-
-  /* Add loading container styles */
-  .loading-container {
-    display: none;
-    margin-bottom: 1rem;
-    position: relative;
-    z-index: 10;
-    width: 100%;
-  }
-
-  .loaderRectangle {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 0 3px;
-    padding: 10px 20px;
-    background: rgba(0, 0, 0, 0.2) !important;
-    border-radius: 15px;
-    margin-left: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    width: 100px;
-    /* Fixed width */
-    height: 40px;
-    /* Fixed height */
-  }
-
-  .loaderRectangle div {
-    width: 8px;
-    height: 16px;
-    animation: .9s ease-in-out infinite;
-    background: #FFFFFF;
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
-    border-radius: 2px;
-  }
-
-  .loaderRectangle div:nth-child(1) {
-    animation-name: rectangleOneAnim;
-    animation-delay: 0.1s;
-  }
-
-  @keyframes rectangleOneAnim {
-    0% {
-      height: 15px;
-    }
-
-    50% {
-      height: 30px;
-    }
-
-    100% {
-      height: 15px;
-    }
-  }
-
-  .loaderRectangle div:nth-child(2) {
-    animation-name: rectangleTwoAnim;
-    animation-delay: 0.2s;
-  }
-
-  @keyframes rectangleTwoAnim {
-    0% {
-      height: 15px;
-    }
-
-    50% {
-      height: 40px;
-    }
-
-    100% {
-      height: 15px;
-    }
-  }
-
-  .loaderRectangle div:nth-child(3) {
-    animation-name: rectangleThreeAnim;
-    animation-delay: 0.3s;
-  }
-
-  @keyframes rectangleThreeAnim {
-    0% {
-      height: 15px;
-    }
-
-    50% {
-      height: 50px;
-    }
-
-    100% {
-      height: 15px;
-    }
-  }
-
-  .loaderRectangle div:nth-child(4) {
-    animation-name: rectangleFourAnim;
-    animation-delay: 0.4s;
-  }
-
-  @keyframes rectangleFourAnim {
-    0% {
-      height: 15px;
-    }
-
-    50% {
-      height: 40px;
-    }
-
-    100% {
-      height: 15px;
-    }
-  }
-
-  .loaderRectangle div:nth-child(5) {
-    animation-name: rectangleFiveAnim;
-    animation-delay: 0.5s;
-  }
-
-  @keyframes rectangleFiveAnim {
-    0% {
-      height: 15px;
-    }
-
-    50% {
-      height: 30px;
-    }
-
-    100% {
-      height: 15px;
-    }
-  }
-
-
-
-  .action-dropdown {
-    background-color: rgba(0, 0, 0, 0.8);
-    border: none;
-    border-radius: 10px;
-    margin-top: 5px;
-    padding: 8px 0;
-    min-width: 160px;
-  }
-
-  .action-dropdown .dropdown-item {
-    color: white;
-    padding: 8px 16px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: all 0.3s ease;
-  }
-
-  .action-dropdown .dropdown-item:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-
-  .action-dropdown .dropdown-item i {
-    width: 20px;
-    text-align: center;
-  }
-</style>

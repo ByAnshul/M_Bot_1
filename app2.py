@@ -9,14 +9,13 @@ from collections import deque
 from datetime import datetime
 import base64
 import requests
-from places import MedicalPlacesSystem  # Add this import
+from places import MedicalPlacesSystem  # Import for medical places recommendations
 
 from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.chat_models import ChatOpenAI
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_pinecone import PineconeVectorStore
-# from langchain.chat_models import ChatOpenAI  # Use ChatOpenAI with Together API
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate
@@ -63,15 +62,8 @@ llm = ChatOpenAI(
     max_tokens=500
 )
 
-# Build prompt chain with context
-prompt = ChatPromptTemplate.from_messages([
-    ("system", get_system_prompt() + "\n\nPrevious conversation context:\n{context}"),
-    ("human", "{input}"),
-])
-
-# Create the question-answer and retrieval chain
-question_answer_chain = create_stuff_documents_chain(llm, prompt)
-rag_chain = create_retrieval_chain(retriever, question_answer_chain)
+# Note: Global prompt chain initialization is removed.
+# We will rebuild the prompt chain dynamically within the /get route.
 
 # Configure upload folder
 UPLOAD_FOLDER = 'uploads'
@@ -83,7 +75,16 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 uploaded_docs = {}
 
 # Initialize MedicalPlacesSystem
-medical_system = MedicalPlacesSystem()
+print("Initializing MedicalPlacesSystem...")
+global medical_system
+try:
+    medical_system = MedicalPlacesSystem()
+    print("MedicalPlacesSystem initialized successfully")
+except Exception as e:
+    print(f"Error initializing MedicalPlacesSystem: {str(e)}")
+    import traceback
+    print(f"Full traceback: {traceback.format_exc()}")
+    medical_system = None  # Explicitly set to None on failure
 
 def init_session():
     """Initialize session variables if they don't exist"""
@@ -135,16 +136,16 @@ def chat():
         print("No user_id in session, redirecting to signin")  # Debug log
         return redirect(url_for('signin'))
         
-    return render_template('chat2.html')
+    return render_template('chat.html')
 
 @app.route('/main')
 def main():
     # Redirect to signin if not logged in
     if 'user_id' not in session:
         return redirect(url_for('signin'))
-    return render_template('chat2.html')
+    return render_template('chat.html')
 
-@app.get("/signin")  # Add this route
+@app.get("/signin")
 async def signin():
     return render_template("signin.html")
 
@@ -166,19 +167,15 @@ def signup():
 
 @app.route('/login', methods=['POST'])
 def login():
-    
     try:
-        
         data = request.get_json()
         print("Login attempt for email:", data['email'])  # Debug log
             
         user = verify_user(data['email'], data['password'])
         
         if user:
-                # Clear any existing session
             session.clear()
-                
-                # Set session data
+            # Set session data
             session['user_id'] = user['id']
             session['user_email'] = user['email']
             session['user_name'] = user['name']
@@ -188,16 +185,16 @@ def login():
             print("Login successful - Session data:", dict(session))  # Debug log
                 
             return jsonify({
-                    'success': True,
-                    'redirect': '/chat',
-                    'user_name': user['name']
-                })
+                'success': True,
+                'redirect': '/chat',
+                'user_name': user['name']
+            })
         else:
-                print("Login failed - Invalid credentials")  # Debug log
-                return jsonify({
-                    'success': False,
-                    'message': 'Invalid email or password'
-                })
+            print("Login failed - Invalid credentials")  # Debug log
+            return jsonify({
+                'success': False,
+                'message': 'Invalid email or password'
+            })
     except Exception as e:
         print("Login error:", str(e))  # Debug log
         return jsonify({
@@ -209,10 +206,7 @@ def login():
 def guest_login():
     """Handle guest login by setting a guest session"""
     try:
-        # Clear any existing session
         session.clear()
-        
-        # Set guest session data
         session['user_id'] = 'guest'
         session['user_email'] = 'guest@example.com'
         session['user_name'] = 'Guest'
@@ -238,48 +232,36 @@ def get_response():
     print("User input:", msg)
     
     try:
-        # Initialize session if needed
         init_session()
-        
-        # Get conversation context
         context = format_conversation_history()
         
-        # Get user's health information
+        # Get user's health information (if not guest)
         health_info = None
         if 'user_id' in session and session['user_id'] != 'guest':
             health_info = get_user_health(session['user_id'])
         
-        # Get only the most recent document ID
-        recent_doc_id = None
-        if 'uploaded_docs' in session and session['uploaded_docs']:
-            recent_doc_id = session['uploaded_docs'][-1]
-            print(f"Using most recent document ID: {recent_doc_id}")
+        # Rebuild the system prompt with updated context using a placeholder for {context}
+        system_prompt_template = get_system_prompt() + "\n\nPrevious conversation context:\n{context}"
+        print("System prompt template:", system_prompt_template)  # Debug log
         
-        # Configure retriever with document filter
-        search_kwargs = {"k": 5}
-        if recent_doc_id:
-            search_kwargs["filter"] = {"doc_id": recent_doc_id}
-            print(f"Searching with filter: {search_kwargs}")
+        # Build the prompt chain with both 'input' and 'context' placeholders
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", system_prompt_template),
+            ("human", "{input}")
+        ])
         
-        # Update retriever with new search parameters
-        retriever = docsearch.as_retriever(
-            search_type="similarity",
-            search_kwargs=search_kwargs
-        )
+        # Recreate the chain with the updated prompt
+        question_answer_chain = create_stuff_documents_chain(llm, prompt)
+        rag_chain = create_retrieval_chain(retriever, question_answer_chain)
         
-        # Create new chain with updated retriever
-        rag_chain = create_retrieval_chain(
-            retriever,
-            question_answer_chain
-        )
+        # Invoke the chain with both variables
+        response = rag_chain.invoke({"input": msg, "context": context})
+        print("Raw response from rag_chain.invoke:", response)  # Debug log
         
-        # Get relevant documents from Pinecone
-        response = rag_chain.invoke({
-            "input": msg,
-            "context": context
-        })
-        answer = response["answer"]
-    
+        answer = response.get("answer")
+        if answer is None:
+            raise Exception("No 'answer' key found in response: " + str(response))
+        
         # Customize response based on user's health information
         if health_info:
             answer = customize_response(
@@ -288,30 +270,22 @@ def get_response():
                 diseases=health_info.get('diseases')
             )
         
-        print("Response:", answer)
-            
-            # Update conversation history in session
+        print("Final Response:", answer)
         session['conversation_history'].append({
-                "user": msg,
-                "assistant": answer
-            })
-            
-            # Keep only last 5 exchanges
+            "user": msg,
+            "assistant": answer
+        })
         if len(session['conversation_history']) > 5:
-                session['conversation_history'] = session['conversation_history'][-5:]
-            
-            # Update current context
+            session['conversation_history'] = session['conversation_history'][-5:]
         session['current_context'] = {
-                "last_question": msg,
-                "last_answer": answer
-            }
-        
-        # Ensure session changes are saved
+            "last_question": msg,
+            "last_answer": answer
+        }
         session.modified = True
         
         return str(answer)
     except Exception as e:
-        print("Error:", str(e))
+        print("Error during get_response:", str(e))
         return "I apologize, but I encountered an error while processing your question. Please try again."
 
 @app.route("/upload", methods=["POST"])
@@ -330,23 +304,19 @@ def upload_file():
         return jsonify({'error': 'Invalid file type. Only PDF files are allowed.'}), 400
 
     try:
-        # Generate unique document ID
         doc_id = str(uuid.uuid4())
         print(f"Processing file: {file.filename} with doc_id: {doc_id}")
         
-        # Save file temporarily
         filename = secure_filename(file.filename)
         temp_dir = tempfile.mkdtemp()
         file_path = os.path.join(temp_dir, filename)
         file.save(file_path)
         print(f"File saved temporarily at: {file_path}")
 
-        # Process PDF and get chunks
         print("Processing PDF...")
         chunks = process_pdf(file_path)
         print(f"Generated {len(chunks)} chunks from PDF")
         
-        # Add documents to Pinecone with metadata
         print("Adding chunks to Pinecone...")
         for i, chunk in enumerate(chunks):
             chunk.metadata.update({
@@ -356,14 +326,12 @@ def upload_file():
                 'upload_time': datetime.now().isoformat()
             })
         
-        # Add to Pinecone in batches
         batch_size = 50
         for i in range(0, len(chunks), batch_size):
             batch = chunks[i:i + batch_size]
             docsearch.add_documents(documents=batch)
             print(f"Added batch {i//batch_size + 1} to Pinecone")
         
-        # Store document info
         uploaded_docs[doc_id] = {
             'filename': filename,
             'chunks': len(chunks),
@@ -372,7 +340,6 @@ def upload_file():
         
         print(f"Successfully processed and stored {filename}")
         
-        # Clean up temporary files
         os.remove(file_path)
         os.rmdir(temp_dir)
 
@@ -384,7 +351,6 @@ def upload_file():
         
     except Exception as e:
         print(f"Error processing file: {str(e)}")
-        # Clean up temporary files if they exist
         try:
             if 'file_path' in locals():
                 os.remove(file_path)
@@ -406,14 +372,12 @@ def delete_document():
         if doc_id not in uploaded_docs:
             return jsonify({'error': 'Document not found'}), 404
             
-        # Delete document from Pinecone
         docsearch.delete(
             filter={
                 "doc_id": doc_id
             }
         )
         
-        # Remove from tracking
         del uploaded_docs[doc_id]
         
         return jsonify({
@@ -431,13 +395,11 @@ def cleanup_session():
         
         for doc_id in doc_ids:
             if doc_id in uploaded_docs:
-                # Delete document from Pinecone
                 docsearch.delete(
                     filter={
                         "doc_id": doc_id
                     }
                 )
-                # Remove from tracking
                 del uploaded_docs[doc_id]
         
         return jsonify({
@@ -456,9 +418,8 @@ def get_summary():
         if not doc_id:
             return jsonify({'error': 'No document ID provided'}), 400
             
-        print(f"Generating summary for doc_id: {doc_id}")  # Debug log
+        print(f"Generating summary for doc_id: {doc_id}")
         
-        # Get document chunks from Pinecone
         results = docsearch.similarity_search(
             query="",
             k=5,
@@ -471,36 +432,29 @@ def get_summary():
             
         print(f"Found {len(results)} chunks for summarization")
         
-        # Combine the chunks into a single text
         content = "\n".join([doc.page_content for doc in results])
         
-        # Create a medical analysis prompt based on document content
         if any(keyword in content.lower() for keyword in ['covid', 'sars-cov-2', 'rt-pcr']):
-            # COVID report analysis
             summary_prompt = ChatPromptTemplate.from_messages([
-                ("system", """Patient name, test date, result (positive/negative), and key recommendations in 2-3 lines."""),
+                ("system", "Patient name, test date, result (positive/negative), and key recommendations in 2-3 lines."),
                 ("human", "Analyze this COVID-19 report:\n\n{content}")
             ])
         elif any(keyword in content.lower() for keyword in ['cbc', 'hemoglobin', 'wbc', 'rbc', 'platelets']):
-            # CBC report analysis
             summary_prompt = ChatPromptTemplate.from_messages([
-                ("system", """Patient name, test date, and any abnormal values that need attention in 2-3 lines."""),
+                ("system", "Patient name, test date, and any abnormal values that need attention in 2-3 lines."),
                 ("human", "Analyze this blood test report:\n\n{content}")
             ])
         elif any(keyword in content.lower() for keyword in ['prescription', 'rx', 'tablet', 'capsule', 'mg']):
-            # Prescription analysis
             summary_prompt = ChatPromptTemplate.from_messages([
-                ("system", """Key medications prescribed and their primary purpose in 2-3 lines."""),
+                ("system", "Key medications prescribed and their primary purpose in 2-3 lines."),
                 ("human", "Analyze this prescription:\n\n{content}")
             ])
         else:
-            # General medical document analysis
             summary_prompt = ChatPromptTemplate.from_messages([
-                ("system", """Main content and purpose in 1-2 lines."""),
+                ("system", "Main content and purpose in 1-2 lines."),
                 ("human", "Analyze this medical document:\n\n{content}")
             ])
         
-        # Generate summary
         summary_chain = summary_prompt | llm
         summary_response = summary_chain.invoke({
             "content": content
@@ -526,7 +480,6 @@ def speech_to_text():
         audio_base64 = base64.b64encode(audio_content).decode("utf-8")
 
         url = f"https://speech.googleapis.com/v1/speech:recognize?key={os.environ.get('GOOGLE_API_KEY', 'AIzaSyAcyY1XoBCNg8qcSYk9oDeChC40-PzkevA')}"
-        
         headers = {"Content-Type": "application/json"}
         data = {
             "config": {
@@ -548,7 +501,7 @@ def speech_to_text():
         else:
             return jsonify({"error": response_data.get('error', {}).get('message', 'Error processing audio')})
     except Exception as e:
-        print(f"Speech-to-text error: {str(e)}")  # Debug log
+        print(f"Speech-to-text error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/find_medical_help', methods=['POST'])
@@ -558,48 +511,52 @@ def find_medical_help():
         disease = data.get('disease')
         location = data.get('location')
         
+        print(f"Received request for medical help - Disease: {disease}, Location: {location}")
+        
         if not disease or not location:
+            print("Missing disease or location in request")
             return jsonify({
                 'success': False,
                 'message': 'Please provide both disease and location'
             }), 400
             
-        # Get recommendations from medical system
-        result = medical_system.get_recommendations(disease, location)
+        print("Calling medical_system.get_recommendations()")
+        try:
+            if not medical_system:
+                raise Exception("Medical recommendation system not initialized")
+            result = medical_system.get_recommendations(disease, location)
+            print(f"Result from medical_system: {result}")
+        except Exception as e:
+            print(f"Error in medical_system.get_recommendations(): {str(e)}")
+            return jsonify({
+                'success': False,
+                'message': f'Error getting recommendations: {str(e)}'
+            }), 500
         
         if not result['success']:
+            print(f"Failed to get recommendations: {result.get('message')}")
             return jsonify(result), 404
             
-        # Format the response for chat display
-        response = f"I've found medical help for {disease} near {location}:\n\n"
-        response += f"Recommended Specialist: {result['specialist'].name}\n"
-        response += f"Specialist Description: {result['specialist'].description}\n\n"
-        response += "Recommended Hospitals:\n"
-        
-        for i, hospital in enumerate(result['hospitals'], 1):
-            response += f"\n{i}. {hospital.name}\n"
-            response += f"   Address: {hospital.address}\n"
-            response += f"   Rating: {hospital.rating}/5\n"
-            if hospital.distance > 0:
-                response += f"   Distance: {hospital.distance:.1f} km\n"
-        
+        response = result['response']
+        print("Successfully formatted response")
         return jsonify({
             'success': True,
             'response': response
         })
         
     except Exception as e:
-        print(f"Error finding medical help: {str(e)}")
+        print(f"Error in find_medical_help: {str(e)}")
+        import traceback
+        print(f"Full traceback: {traceback.format_exc()}")
         return jsonify({
             'success': False,
-            'message': 'An error occurred while finding medical help'
+            'message': f'An error occurred while finding medical help: {str(e)}'
         }), 500
 
-# Optional: Route to start the Flask app as a subprocess
 @app.route('/start-app')
 def start_app():
-    subprocess.Popen(["python", "tryapp.py"], shell=True)
+    subprocess.Popen(["python", "app.py"], shell=True)
     return "App started", 200
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=8081, debug=False)
+    app.run(host="0.0.0.0", port=8080, debug=False)
