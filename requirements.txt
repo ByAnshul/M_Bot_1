@@ -179,7 +179,7 @@ marshmallow
 matplotlib
 matplotlib-inline
 mdurl
-Medical_AI_Bot
+
 mistune
 ml-dtypes
 mpmath
