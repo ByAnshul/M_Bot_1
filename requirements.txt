@@ -5,6 +5,7 @@ requests
 langchain
 langchain-community
 langchain-pinecone
+langchain-huggingface
 pinecone-client
 huggingface-hub
 PyPDF2
