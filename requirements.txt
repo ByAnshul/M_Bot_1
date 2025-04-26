@@ -274,7 +274,6 @@ python-oxmsg==0.0.2
 python-socketio==5.12.1
 pytube==15.0.0
 pytz==2023.3
-pywin32==306
 pywinpty==2.0.10
 PyYAML==6.0.2
 pyzmq==25.1.0
