@@ -9,4 +9,6 @@ langchain-huggingface
 pinecone-client
 huggingface-hub
 PyPDF2
+gunicorn
+
 together
