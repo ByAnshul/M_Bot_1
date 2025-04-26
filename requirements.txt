@@ -7,15 +7,11 @@ langchain-community
 langchain-pinecone
 langchain-huggingface
 pinecone-client
+googlemaps
 huggingface-hub
 PyPDF2
 gunicorn
-flask
-python-dotenv
-requests
 flask-sqlalchemy
-pinecone-client
-langchain
 transformers
 torch
 flask-cors
