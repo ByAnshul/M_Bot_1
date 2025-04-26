@@ -6,6 +6,7 @@ langchain
 langchain-community
 langchain-pinecone
 langchain-huggingface
+openai
 pinecone-client
 googlemaps
 huggingface-hub
